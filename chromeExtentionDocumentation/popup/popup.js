@@ -3,16 +3,24 @@ document.addEventListener("DOMContentLoaded", () => {
   const timer = document.getElementById("timer");
 
   chrome.storage.local.get(["lastPage"], (response) => {
-    window.location.href = response.lastPage;
+    if (response.lastPage === "stopwatch.html") {
+      stopwatchPath();
+    } else if (response.lastPage === "timer.html") {
+      timerPath();
+    }
   });
 
-  stopwatch.addEventListener("click", () => {
-    chrome.storage.local.set({ lastPage: "stopwatch.html" });
-    window.location.href = "stopwatch.html";
-  });
+  stopwatch.addEventListener("click", stopwatchPath);
 
-  timer.addEventListener("click", () => {
-    chrome.storage.local.set({ lastPage: "timer.html" });
-    window.location.href = "timer.html";
-  });
+  timer.addEventListener("click", timerPath);
 });
+
+const stopwatchPath = () => {
+  chrome.storage.local.set({ lastPage: "stopwatch.html" });
+  window.location.href = "stopwatch.html";
+};
+
+const timerPath = () => {
+  chrome.storage.local.set({ lastPage: "timer.html" });
+  window.location.href = "timer.html";
+};

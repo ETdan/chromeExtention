@@ -10,7 +10,7 @@ back.addEventListener("click", () => {
 });
 
 chrome.storage.local.get(
-  ["stopWatchButtons", "stopWatchButtonsStyle"],
+  ["stopWatchButtons", "stopWatchButtonsStyle", "stopWatchTime"],
   (response) => {
     btns.innerHTML =
       response.stopWatchButtons ||
@@ -19,6 +19,7 @@ chrome.storage.local.get(
       "style",
       response.stopWatchButtonsStyle || "grid-template-columns:100px"
     );
+    time.innerHTML = fancyTimeFormat(response.stopWatchTime);
     attachEventListeners();
   }
 );

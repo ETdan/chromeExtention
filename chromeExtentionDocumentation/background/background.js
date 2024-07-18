@@ -1,42 +1,31 @@
-// start = '<button class="glassmorphic-button" id="start">Start</button>';
-// style = "";
-// var start = document.createElement("button");
-// start.innerHTML = "start";
-// start.className += "glassmorphic-button";
-// start.id += "start";
-
-// start.onclick = clicked;
-// function clicked() {
-//   btns.innerHTML =
-//     '<button class="glassmorphic-button" id="stop">Stop</button><button class="glassmorphic-button" id="lap">Lap</button>';
-//   btns.setAttribute("style", "grid-template-columns: 100px 100px");
-//   console.log(btns.innerHTM);
-//   chrome.storage.local.set({
-//     stopWatchRunning: true,
-//     stopWatchButtons: btns.innerHTML,
-//     stopWatchButtonsStyle: btns.getAttribute(),
-//   });
-// }
-
 chrome.storage.local.get(
   [
     "lastPage",
     "stopWatchRunning",
     "stopWatchTime",
     "stopWatchButtons",
+    "stopWatchButtonsStyle",
     "timerTime",
     "timerRunning",
-    "timerStatus",
+    "timerTImeDisplay",
+    "timerButtons",
+    "timerInputs",
+    "timerButtonsStyle",
+    "timerFinished",
   ],
   (result) => {
     const lastPage = result.lastPage || "popup.html";
     const stopWatchTime = result.stopWatchTime || 0;
     const stopWatchButtons = result.stopWatchButtons || "";
     const stopWatchButtonsStyle = result.stopWatchButtonsStyle || "";
+    const stopWatchRunning = result.stopWatchRunning || false;
     const timerTime = result.timerTime || 0;
     const timerRunning = result.timerRunning || false;
-    const stopWatchRunning = result.stopWatchRunning || false;
-    const timerStatus = result.timerStatus || [];
+    const timerFinished = result.timerButtons || false;
+    const timerTimeDisplay = result.timerTimeDisplay || "";
+    const timerButtons = result.timerButtons || "";
+    const timerInputs = result.timerInputs || "";
+    const timerButtonsStyle = result.timerButtonsStyle || "";
 
     chrome.storage.local.set({
       lastPage: lastPage,
@@ -46,7 +35,11 @@ chrome.storage.local.get(
       stopWatchButtonsStyle: stopWatchButtonsStyle,
       timerTime: timerTime,
       timerRunning: timerRunning,
-      timerStatus: timerStatus,
+      timerFinished: timerFinished,
+      timerTimeDisplay: timerTimeDisplay,
+      timerButtons: timerButtons,
+      timerInputs: timerInputs,
+      timerButtonsStyle: timerButtonsStyle,
     });
     // window.location.href = lastPage;
   }
@@ -66,7 +59,7 @@ function updateStatus() {
       "stopWatchTime",
       "timerTime",
       "timerRunning",
-      "timerstates",
+      "timerFinished",
     ],
     (result) => {
       if (result.stopWatchRunning) {
@@ -79,7 +72,19 @@ function updateStatus() {
       //   }
       if (result.timerRunning) {
         result.timerTime -= 1;
-        chrome.storage.local.set({ timerTime: result.timerTime });
+        if (result.timerTime > 0)
+          chrome.storage.local.set({ timerTime: result.timerTime });
+        else {
+          chrome.storage.local.set({
+            timerFinished: true,
+            timerTime: 0,
+            timerTimeDisplay: "00:00",
+            timerButtons:
+              "<button class='glassmorphic-button' id='start'>Start</button>",
+            timerInputs:
+              '<input required type="number" max="60" id="hour" placeholder="Hour"></input><input required type="number" max="60" id="minute" placeholder="Minute"></input><input required type="number" max="60" id="second" placeholder="Second"></input>',
+          });
+        }
       }
       //   else {
       //     console.log("timer not running");
