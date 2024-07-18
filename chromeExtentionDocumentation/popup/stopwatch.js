@@ -4,25 +4,30 @@ const lapBox = document.getElementById("lapBox");
 
 const back = document.getElementById("back");
 
-const timerStorage = JSON.parse(localStorage.getItem("timer"));
-
 back.addEventListener("click", () => {
-  timerStorage.path = "popup.html";
-  localStorage.setItem("timer", JSON.stringify(timerStorage));
+  chrome.storage.local.set({ lastPage: "popup.html" });
   window.location.href = "popup.html";
 });
 
-let counter = 0;
-let paused = true;
-
-const myTimer = () => {
-  if (!paused) {
-    time.innerHTML = `${fancyTimeFormat(counter)}`;
-    counter += 1;
+chrome.storage.local.get(
+  ["stopWatchButtons", "stopWatchButtonsStyle"],
+  (response) => {
+    btns.innerHTML =
+      response.stopWatchButtons ||
+      '<button class="glassmorphic-button" id="start">Start</button>';
+    btns.setAttribute(
+      "style",
+      response.stopWatchButtonsStyle || "grid-template-columns:100px"
+    );
+    attachEventListeners();
   }
-};
+);
 
-const myInterval = setInterval(myTimer, 1000);
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  chrome.storage.local.get(["stopWatchTime"], (response) => {
+    time.innerHTML = fancyTimeFormat(response.stopWatchTime);
+  });
+});
 
 const attachEventListeners = () => {
   const start = document.getElementById("start");
@@ -33,47 +38,71 @@ const attachEventListeners = () => {
 
   if (start) {
     start.addEventListener("click", () => {
-      paused = false;
       btns.innerHTML =
         '<button class="glassmorphic-button" id="stop">Stop</button><button class="glassmorphic-button" id="lap">Lap</button>';
       btns.setAttribute("style", "grid-template-columns: 100px 100px");
+      console.log(btns.innerHTM);
+      chrome.storage.local.set({
+        stopWatchRunning: true,
+        stopWatchButtons: btns.innerHTML,
+        stopWatchButtonsStyle: btns.getAttribute("style"),
+      });
+
       attachEventListeners();
     });
   }
 
   if (stop) {
     stop.addEventListener("click", () => {
-      paused = true;
       btns.innerHTML =
         '<button class="glassmorphic-button" id="resume">Resume</button><button class="glassmorphic-button" id="reset">Reset</button>';
+      chrome.storage.local.set({
+        stopWatchRunning: false,
+        stopWatchButtons: btns.innerHTML,
+        stopWatchButtonsStyle: btns.getAttribute("style"),
+      });
       attachEventListeners();
     });
   }
 
   if (resume) {
     resume.addEventListener("click", () => {
-      paused = false;
       btns.innerHTML =
         '<button class="glassmorphic-button" id="stop">Stop</button><button class="glassmorphic-button" id="lap">Lap</button>';
+      chrome.storage.local.set({
+        stopWatchRunning: true,
+        stopWatchButtons: btns.innerHTML,
+        stopWatchButtonsStyle: btns.getAttribute("style"),
+      });
       attachEventListeners();
     });
   }
 
   if (reset) {
     reset.addEventListener("click", () => {
-      paused = true;
-      counter = 0;
+      chrome.storage.local.set({ stopWatchRunning: false });
+      chrome.storage.local.set({ stopWatchTime: 0 });
       time.innerHTML = "00:00";
       btns.innerHTML =
         '<button class="glassmorphic-button" id="start">Start</button>';
       btns.setAttribute("style", "grid-template-columns:100px");
       lapBox.innerHTML = "";
+      chrome.storage.local.set({
+        stopWatchTime: 0,
+        stopWatchRunning: false,
+        stopWatchButtons: btns.innerHTML,
+        stopWatchButtonsStyle: btns.getAttribute("style"),
+      });
       attachEventListeners();
     });
   }
   if (lap) {
-    lap.addEventListener("click", () => {
-      lapBox.innerHTML = time.textContent;
+    lap.addEventListener("click", async () => {
+      lapBox.innerHTML = await chrome.storage.local
+        .get(["stopWatchTime"])
+        .then((result) => {
+          return result.stopWatchTime || 10;
+        });
     });
   }
 };

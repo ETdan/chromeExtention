@@ -7,7 +7,10 @@
     "default_popup": "popup/popup.html",
     "default_icon": "images/image.png"
   },
-  "permissions": ["storage"],
+  "permissions": ["storage", "alarms"],
+  "background": {
+    "service_worker": "background/background.js"
+  },
   "icons": {
     "16": "images/image.png",
     "32": "images/image.png",
@@ -16,11 +19,8 @@
   },
   "content_scripts": [
     {
-      "js": ["scripts/content.js"],
-      "matches": [
-        "https://developer.chrome.com/docs/extensions/*",
-        "https://developer.chrome.com/docs/webstore/*"
-      ]
+      "matches": ["<all_urls>"],
+      "js": ["scripts/content.js"]
     }
   ]
 }
